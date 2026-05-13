@@ -179,6 +179,20 @@ def within_days(posted_on: str, days_back: int | None) -> bool:
 
     return True
 
+def looks_expired(job: Job) -> bool:
+    text = f"{job.title} {job.posted_on} {job.description}".lower()
+
+    expired_phrases = [
+        "no longer accepting applications",
+        "job posting is no longer active",
+        "this job is no longer available",
+        "this position is no longer available",
+        "applications are no longer being accepted",
+    ]
+
+    return any(phrase in text for phrase in expired_phrases)
+
+
 
 def term_hits(text: str, terms: list[str]) -> list[str]:
     lowered = text.lower()
@@ -280,8 +294,14 @@ def run(config_path: Path) -> int:
                     continue
 
                 description = fetch_description(session, api_url, job.external_path)
-                full_job = Job(**{**job.__dict__, "description": description})
-                score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
+full_job = Job(**{**job.__dict__, "description": description})
+
+if looks_expired(full_job):
+    seen.add(key)
+    continue
+
+score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
+
 
                 if config.get("exclude_on_negative", True) and negative_hits:
                     seen.add(key)
