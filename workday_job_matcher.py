@@ -96,10 +96,22 @@ def fetch_page(session: requests.Session, api_url: str, offset: int, page_size: 
 def fetch_description(session: requests.Session, api_url: str, external_path: str) -> str:
     if not external_path:
         return ""
-    detail_url = f"{api_url.rstrip('/')}/{external_path.strip('/')}"
-    response = session.get(detail_url, timeout=30, headers={"Accept": "application/json"})
-    if response.status_code == 404:
+
+    detail_base_url = api_url.rsplit("/jobs", 1)[0]
+    detail_url = f"{detail_base_url.rstrip('/')}/{external_path.strip('/')}"
+
+    response = session.get(
+        detail_url,
+        timeout=30,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0",
+        },
+    )
+
+    if response.status_code in (404, 406):
         return ""
+
     response.raise_for_status()
     payload = response.json()
     job_posting = payload.get("jobPostingInfo") or payload.get("jobPosting") or {}
@@ -110,6 +122,7 @@ def fetch_description(session: requests.Session, api_url: str, external_path: st
         job_posting.get("additionalJobDescription"),
     ]
     return normalize_text(" ".join(piece for piece in pieces if piece))
+
 
 
 def extract_jobs(site_name: str, public_url: str, payload: dict[str, Any]) -> list[Job]:
