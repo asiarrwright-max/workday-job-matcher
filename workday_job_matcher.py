@@ -292,16 +292,14 @@ def run(config_path: Path) -> int:
 
                 if not within_days(job.posted_on, days_back):
                     continue
-
                 description = fetch_description(session, api_url, job.external_path)
-full_job = Job(**{**job.__dict__, "description": description})
+                full_job = Job(**{**job.__dict__, "description": description})
 
-if looks_expired(full_job):
-    seen.add(key)
-    continue
+                if looks_expired(full_job):
+                    seen.add(key)
+                    continue
 
-score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
-
+                score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
 
                 if config.get("exclude_on_negative", True) and negative_hits:
                     seen.add(key)
@@ -309,6 +307,22 @@ score, matched_terms, negative_hits = score_job(full_job, config.get("background
 
                 if score >= minimum_score:
                     rows.append(
+                        {
+                            "score": score,
+                            "site": full_job.site,
+                            "title": full_job.title,
+                            "location": full_job.location,
+                            "posted_on": full_job.posted_on,
+                            "matched_terms": ", ".join(matched_terms),
+                            "negative_terms": ", ".join(negative_hits),
+                            "url": full_job.url,
+                            "description": full_job.description[:1000],
+                        }
+                    )
+
+           
+
+
                         {
                             "score": score,
                             "site": full_job.site,
