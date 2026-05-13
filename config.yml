@@ -41,5 +41,9 @@ background:
     physician: 6
 
 sites:
-  - name: Example Workday Site
-    url: https://example.wd1.myworkdayjobs.com/External
+  - name: CVS Health
+    url: https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers
+
+  - name: UnitedHealth Group
+    url: https://uhg.wd5.myworkdayjobs.com/UnitedHealth_Group
+
