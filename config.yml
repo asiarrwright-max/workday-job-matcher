@@ -1,8 +1,8 @@
-minimum_score: 20
+minimum_score: 18
 max_pages_per_site: 10
 page_size: 20
 days_back: 30
-exclude_seen: false
+exclude_seen: true
 exclude_on_negative: true
 
 background:
