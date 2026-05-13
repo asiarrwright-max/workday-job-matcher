@@ -38,10 +38,13 @@ class Job:
 def load_config(path: Path) -> dict[str, Any]:
     if not path.exists():
         raise FileNotFoundError(f"Config not found: {path}")
+
     with path.open("r", encoding="utf-8") as handle:
         config = yaml.safe_load(handle) or {}
+
     if not config.get("sites"):
         raise ValueError("Config must include at least one site.")
+
     return config
 
 
@@ -62,7 +65,6 @@ def slug_from_workday_url(url: str) -> tuple[str, str, str]:
 
     tenant = host.split(".")[0]
     site_slug = path_parts[-1]
-
     return host, tenant, site_slug
 
 
@@ -74,12 +76,14 @@ def workday_api_url(public_url: str) -> str:
 def job_detail_url(public_url: str, external_path: str) -> str:
     parsed = urlparse(public_url)
     base = f"{parsed.scheme}://{parsed.netloc}"
-    career_path = parsed.path.rstrip("/")
+    path_parts = [part for part in parsed.path.split("/") if part]
+    site_slug = path_parts[-1] if path_parts else ""
+
     if external_path.startswith("http"):
         return external_path
-    if external_path.startswith("/"):
-        return f"{base}{external_path}"
-    return f"{base}{career_path}/{external_path.lstrip('/')}"
+
+    cleaned_path = external_path.strip("/")
+    return f"{base}/en-US/{site_slug}/{cleaned_path}"
 
 
 def fetch_page(session: requests.Session, api_url: str, offset: int, page_size: int) -> dict[str, Any]:
@@ -87,7 +91,11 @@ def fetch_page(session: requests.Session, api_url: str, offset: int, page_size: 
         api_url,
         json={"appliedFacets": {}, "limit": page_size, "offset": offset, "searchText": ""},
         timeout=30,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0",
+        },
     )
     response.raise_for_status()
     return response.json()
@@ -115,14 +123,15 @@ def fetch_description(session: requests.Session, api_url: str, external_path: st
     response.raise_for_status()
     payload = response.json()
     job_posting = payload.get("jobPostingInfo") or payload.get("jobPosting") or {}
+
     pieces = [
         job_posting.get("jobDescription"),
         job_posting.get("qualifications"),
         job_posting.get("responsibilities"),
         job_posting.get("additionalJobDescription"),
     ]
-    return normalize_text(" ".join(piece for piece in pieces if piece))
 
+    return normalize_text(" ".join(piece for piece in pieces if piece))
 
 
 def extract_jobs(site_name: str, public_url: str, payload: dict[str, Any]) -> list[Job]:
@@ -179,9 +188,9 @@ def within_days(posted_on: str, days_back: int | None) -> bool:
 
     return True
 
+
 def looks_expired(job: Job) -> bool:
     text = f"{job.title} {job.posted_on} {job.description}".lower()
-
     expired_phrases = [
         "no longer accepting applications",
         "job posting is no longer active",
@@ -191,7 +200,6 @@ def looks_expired(job: Job) -> bool:
     ]
 
     return any(phrase in text for phrase in expired_phrases)
-
 
 
 def term_hits(text: str, terms: list[str]) -> list[str]:
@@ -291,7 +299,9 @@ def run(config_path: Path) -> int:
                     continue
 
                 if not within_days(job.posted_on, days_back):
+                    seen.add(key)
                     continue
+
                 description = fetch_description(session, api_url, job.external_path)
                 full_job = Job(**{**job.__dict__, "description": description})
 
@@ -305,7 +315,7 @@ def run(config_path: Path) -> int:
                     seen.add(key)
                     continue
 
-                          if score >= minimum_score:
+                if score >= minimum_score:
                     rows.append(
                         {
                             "score": score,
@@ -321,7 +331,7 @@ def run(config_path: Path) -> int:
                     )
 
                 seen.add(key)
-                
+
     save_seen(seen)
     paths = write_results(sorted(rows, key=lambda row: row["score"], reverse=True))
 
