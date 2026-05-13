@@ -1,4 +1,4 @@
-minimum_score: 3
+minimum_score: 10
 max_pages_per_site: 10
 page_size: 20
 days_back: 30
@@ -7,38 +7,147 @@ exclude_on_negative: true
 
 background:
   required_any:
-    - healthcare
-    - clinical
     - operations
     - population health
-    - care coordination
-    - project manager
-    - program manager
-    - analyst
+    - value-based care
+    - care management
+    - healthcare operations
+    - clinical operations
+    - provider operations
+    - provider performance
+    - quality improvement
+    - managed care
+    - Medicare
+    - Medicaid
+    - utilization management
+    - program management
+    - operational excellence
+    - healthcare transformation
+
   nice_to_have:
-    healthcare operations: 5
-    population health: 5
-    value based care: 5
-    care management: 4
-    project management: 4
-    program management: 4
-    process improvement: 4
-    clinical operations: 4
-    data analysis: 3
-    reporting: 3
-    stakeholder management: 3
-    quality improvement: 3
-    medicare: 3
-    medicaid: 3
-    remote: 2
+    director of operations: 12
+    director population health: 12
+    director of population health: 12
+    director of healthcare operations: 12
+    director of care management: 12
+    director of value-based care: 12
+    director provider operations: 10
+    director provider performance: 10
+    director clinical operations: 10
+    director quality improvement: 10
+    director managed care: 10
+    director utilization management: 10
+    director strategy: 9
+    strategy and operations: 9
+    chief of staff: 9
+    regional director: 9
+    senior manager healthcare operations: 9
+    senior manager population health: 9
+    senior manager care management: 9
+    strategic operations manager: 8
+    operational excellence manager: 8
+    advisory services: 8
+    provider experience: 8
+    payer operations: 8
+    provider network operations: 8
+    value-based care program manager: 8
+    population health strategy: 8
+    healthcare operations consulting: 8
+    healthcare program management: 8
+    member services operations: 7
+    care delivery operations: 7
+    Medicare operations: 7
+    Medicaid operations: 7
+
+    population health operations: 8
+    value-based care: 8
+    Medicare Advantage: 8
+    Medicaid: 6
+    care management operations: 8
+    utilization management: 7
+    cost of care: 7
+    HEDIS: 7
+    Stars: 7
+    quality improvement: 7
+    provider engagement: 7
+    payer-provider collaboration: 7
+    healthcare operations leadership: 7
+    care coordination: 6
+    transitions of care: 6
+    high-risk population: 6
+    risk stratification: 6
+    workflow redesign: 6
+    operational strategy: 6
+    process improvement: 6
+    KPI: 6
+    dashboard: 5
+    healthcare analytics: 5
+    provider performance improvement: 7
+    healthcare operations scaling: 6
+    operational excellence: 7
+    program implementation: 6
+    cross-functional leadership: 6
+    stakeholder management: 6
+    change management: 6
+    vendor management: 5
+    performance management: 6
+    healthcare transformation: 7
+    utilization reduction: 6
+    PMPM: 6
+    care gap closure: 6
+    reporting: 4
+    strategic planning: 5
+    healthcare project management: 6
+    Lean: 5
+    workflow optimization: 6
+
+    remote: 5
+    nationwide remote: 6
+    hybrid: 2
+    Minnesota: 3
+    North Dakota: 3
+    Fargo: 4
+    Moorhead: 4
+    Texas: 3
+    Arizona: 3
+    Florida: 2
+    Tennessee: 2
+    North Carolina: 2
+    Georgia: 2
+    Colorado: 2
+    Illinois: 2
+
   negative:
-    sales: 4
-    commission: 4
-    warehouse: 5
-    retail: 5
-    software engineer: 6
-    nurse practitioner: 6
-    physician: 6
+    bedside nursing: 12
+    RN required: 12
+    registered nurse required: 12
+    physician required: 12
+    MD required: 12
+    nurse practitioner: 10
+    direct sales: 10
+    commission-only: 10
+    commission only: 10
+    quota-carrying: 10
+    business development representative: 10
+    pharmaceutical sales: 10
+    software engineer: 12
+    developer: 8
+    coding: 8
+    data scientist: 8
+    heavy travel: 10
+    75% travel: 10
+    50% travel: 8
+    fully onsite: 8
+    on-site only: 8
+    entry level: 10
+    call center: 9
+    customer service representative: 10
+    insurance sales: 10
+    recruiter: 10
+    overnight shift: 10
+    coordinator: 7
+    assistant: 7
+
 
 sites:
   - name: CVS Health
