@@ -23,6 +23,15 @@ jobs:
 
       - name: Run matcher
         run: python workday_job_matcher.py --config config.yml
+      - name: Email matches
+        run: python send_email.py --output-dir output
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_TO_EMAIL: ${{ secrets.ALERT_TO_EMAIL }}
+
 
       - name: Upload matches
         uses: actions/upload-artifact@v4
