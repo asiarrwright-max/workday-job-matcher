@@ -56,10 +56,13 @@ def slug_from_workday_url(url: str) -> tuple[str, str, str]:
     parsed = urlparse(url)
     host = parsed.netloc
     path_parts = [part for part in parsed.path.split("/") if part]
+
     if not host or not path_parts:
         raise ValueError(f"Not a recognized Workday career URL: {url}")
-    tenant = path_parts[0]
+
+    tenant = host.split(".")[0]
     site_slug = path_parts[-1]
+
     return host, tenant, site_slug
 
 
