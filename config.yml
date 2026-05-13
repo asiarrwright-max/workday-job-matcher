@@ -44,6 +44,5 @@ sites:
   - name: CVS Health
     url: https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers
 
-  - name: UnitedHealth Group
-    url: https://uhg.wd5.myworkdayjobs.com/UnitedHealth_Group
+
 
