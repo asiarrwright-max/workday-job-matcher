@@ -305,7 +305,7 @@ def run(config_path: Path) -> int:
                     seen.add(key)
                     continue
 
-                if score >= minimum_score:
+                          if score >= minimum_score:
                     rows.append(
                         {
                             "score": score,
@@ -320,24 +320,8 @@ def run(config_path: Path) -> int:
                         }
                     )
 
-           
-
-
-                        {
-                            "score": score,
-                            "site": full_job.site,
-                            "title": full_job.title,
-                            "location": full_job.location,
-                            "posted_on": full_job.posted_on,
-                            "matched_terms": ", ".join(matched_terms),
-                            "negative_terms": ", ".join(negative_hits),
-                            "url": full_job.url,
-                            "description": full_job.description[:1000],
-                        }
-                    )
-
                 seen.add(key)
-
+                
     save_seen(seen)
     paths = write_results(sorted(rows, key=lambda row: row["score"], reverse=True))
 
