@@ -1,0 +1,45 @@
+minimum_score: 8
+max_pages_per_site: 10
+page_size: 20
+days_back: 30
+exclude_seen: true
+exclude_on_negative: true
+
+background:
+  required_any:
+    - healthcare
+    - clinical
+    - operations
+    - population health
+    - care coordination
+    - project manager
+    - program manager
+    - analyst
+  nice_to_have:
+    healthcare operations: 5
+    population health: 5
+    value based care: 5
+    care management: 4
+    project management: 4
+    program management: 4
+    process improvement: 4
+    clinical operations: 4
+    data analysis: 3
+    reporting: 3
+    stakeholder management: 3
+    quality improvement: 3
+    medicare: 3
+    medicaid: 3
+    remote: 2
+  negative:
+    sales: 4
+    commission: 4
+    warehouse: 5
+    retail: 5
+    software engineer: 6
+    nurse practitioner: 6
+    physician: 6
+
+sites:
+  - name: Example Workday Site
+    url: https://example.wd1.myworkdayjobs.com/External
