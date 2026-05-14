@@ -10,7 +10,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 import yaml
@@ -50,6 +50,8 @@ def load_config(path: Path) -> dict[str, Any]:
 
 def normalize_text(value: Any) -> str:
     text = html.unescape(str(value or ""))
+    text = re.sub(r"<script[^>]*>.*?</script>", " ", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.IGNORECASE | re.DOTALL)
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
@@ -73,7 +75,7 @@ def workday_api_url(public_url: str) -> str:
     return f"https://{host}/wday/cxs/{tenant}/{site_slug}/jobs"
 
 
-def job_detail_url(public_url: str, external_path: str) -> str:
+def workday_job_detail_url(public_url: str, external_path: str) -> str:
     parsed = urlparse(public_url)
     base = f"{parsed.scheme}://{parsed.netloc}"
     path_parts = [part for part in parsed.path.split("/") if part]
@@ -86,7 +88,7 @@ def job_detail_url(public_url: str, external_path: str) -> str:
     return f"{base}/en-US/{site_slug}/{cleaned_path}"
 
 
-def fetch_page(session: requests.Session, api_url: str, offset: int, page_size: int) -> dict[str, Any]:
+def fetch_workday_page(session: requests.Session, api_url: str, offset: int, page_size: int) -> dict[str, Any]:
     response = session.post(
         api_url,
         json={"appliedFacets": {}, "limit": page_size, "offset": offset, "searchText": ""},
@@ -101,7 +103,7 @@ def fetch_page(session: requests.Session, api_url: str, offset: int, page_size: 
     return response.json()
 
 
-def fetch_description(session: requests.Session, api_url: str, external_path: str) -> str:
+def fetch_workday_description(session: requests.Session, api_url: str, external_path: str) -> str:
     if not external_path:
         return ""
 
@@ -111,10 +113,7 @@ def fetch_description(session: requests.Session, api_url: str, external_path: st
     response = session.get(
         detail_url,
         timeout=30,
-        headers={
-            "Accept": "application/json",
-            "User-Agent": "Mozilla/5.0",
-        },
+        headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0"},
     )
 
     if response.status_code in (404, 406):
@@ -134,7 +133,7 @@ def fetch_description(session: requests.Session, api_url: str, external_path: st
     return normalize_text(" ".join(piece for piece in pieces if piece))
 
 
-def extract_jobs(site_name: str, public_url: str, payload: dict[str, Any]) -> list[Job]:
+def extract_workday_jobs(site_name: str, public_url: str, payload: dict[str, Any]) -> list[Job]:
     postings = payload.get("jobPostings") or payload.get("jobs") or []
     jobs: list[Job] = []
 
@@ -155,7 +154,7 @@ def extract_jobs(site_name: str, public_url: str, payload: dict[str, Any]) -> li
                 title=title,
                 location=normalize_text(locations),
                 posted_on=normalize_text(posted_on),
-                url=job_detail_url(public_url, external_path),
+                url=workday_job_detail_url(public_url, external_path),
                 external_path=external_path,
                 description="",
                 external_id=external_id,
@@ -163,6 +162,103 @@ def extract_jobs(site_name: str, public_url: str, payload: dict[str, Any]) -> li
         )
 
     return jobs
+
+
+def fetch_talentbrew_page(session: requests.Session, url: str) -> str:
+    response = session.get(
+        url,
+        timeout=30,
+        headers={"Accept": "text/html", "User-Agent": "Mozilla/5.0"},
+    )
+    response.raise_for_status()
+    return response.text
+
+
+def talentbrew_page_url(base_url: str, page: int) -> str:
+    if page <= 0:
+        return base_url
+
+    separator = "&" if "?" in base_url else "?"
+    return f"{base_url}{separator}p={page + 1}"
+
+
+def extract_talentbrew_jobs(site_name: str, base_url: str, html_text: str) -> list[Job]:
+    jobs: list[Job] = []
+
+    pattern = re.compile(
+        r'<a\s+href="(?P<href>/job/[^"]+)"[^>]*>(?P<label>.*?)</a>',
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    for match in pattern.finditer(html_text):
+        href = html.unescape(match.group("href"))
+        label = normalize_text(match.group("label"))
+
+        if not label or "|" not in label:
+            continue
+
+        parts = [part.strip() for part in label.split("|")]
+        if len(parts) < 2:
+            continue
+
+        title_and_req = parts[0]
+        location = parts[1]
+        work_setting = parts[2] if len(parts) > 2 else ""
+
+        req_match = re.search(r"\b(\d{6,})\b", title_and_req)
+        external_id = req_match.group(1) if req_match else href
+        title = re.sub(r"\b\d{6,}\b", "", title_and_req).strip(" -")
+
+        jobs.append(
+            Job(
+                site=site_name,
+                title=title,
+                location=normalize_text(f"{location} {work_setting}"),
+                posted_on="",
+                url=urljoin(base_url, href),
+                external_path=href,
+                description="",
+                external_id=external_id,
+            )
+        )
+
+    return dedupe_jobs(jobs)
+
+
+def fetch_talentbrew_description(session: requests.Session, url: str) -> tuple[str, str]:
+    response = session.get(
+        url,
+        timeout=30,
+        headers={"Accept": "text/html", "User-Agent": "Mozilla/5.0"},
+    )
+
+    if response.status_code == 404:
+        return "", ""
+
+    response.raise_for_status()
+    html_text = response.text
+    description = normalize_text(html_text)
+
+    posted_on = ""
+    posted_match = re.search(r"Date posted:\s*([^<]+)", html_text, flags=re.IGNORECASE)
+    if posted_match:
+        posted_on = normalize_text(posted_match.group(1))
+
+    return description, posted_on
+
+
+def dedupe_jobs(jobs: list[Job]) -> list[Job]:
+    seen: set[str] = set()
+    deduped: list[Job] = []
+
+    for job in jobs:
+        key = job_key(job)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(job)
+
+    return deduped
 
 
 def within_days(posted_on: str, days_back: int | None) -> bool:
@@ -215,6 +311,8 @@ def is_allowed_work_mode(job: Job, work_modes: dict[str, bool]) -> bool:
         "nationwide",
         "anywhere in the united states",
         "anywhere in the us",
+        "telecommute",
+        "telecommuter",
         "home-based",
         "home based",
     ]
@@ -236,6 +334,7 @@ def is_allowed_work_mode(job: Job, work_modes: dict[str, bool]) -> bool:
         "office based",
         "on site",
         "onsite",
+        "core on-site",
     ]
 
     is_remote = any(term in text for term in remote_terms)
@@ -321,6 +420,56 @@ def write_results(rows: list[dict[str, Any]]) -> tuple[Path, Path] | None:
     return csv_path, json_path
 
 
+def iter_site_jobs(session: requests.Session, site: dict[str, Any], config: dict[str, Any]) -> list[Job]:
+    site_type = site.get("type", "workday")
+    site_name = site["name"]
+    public_url = site["url"]
+    page_size = int(config.get("page_size", 20))
+    max_pages = int(config.get("max_pages_per_site", 10))
+
+    all_jobs: list[Job] = []
+
+    if site_type == "workday":
+        api_url = workday_api_url(public_url)
+
+        for page in range(max_pages):
+            payload = fetch_workday_page(session, api_url, page * page_size, page_size)
+            jobs = extract_workday_jobs(site_name, public_url, payload)
+
+            if not jobs:
+                break
+
+            for job in jobs:
+                description = fetch_workday_description(session, api_url, job.external_path)
+                all_jobs.append(Job(**{**job.__dict__, "description": description}))
+
+        return all_jobs
+
+    if site_type == "talentbrew":
+        for page in range(max_pages):
+            html_text = fetch_talentbrew_page(session, talentbrew_page_url(public_url, page))
+            jobs = extract_talentbrew_jobs(site_name, public_url, html_text)
+
+            if not jobs:
+                break
+
+            for job in jobs:
+                description, posted_on = fetch_talentbrew_description(session, job.url)
+                all_jobs.append(
+                    Job(
+                        **{
+                            **job.__dict__,
+                            "description": description,
+                            "posted_on": posted_on or job.posted_on,
+                        }
+                    )
+                )
+
+        return dedupe_jobs(all_jobs)
+
+    raise ValueError(f"Unsupported site type '{site_type}' for {site_name}")
+
+
 def run(config_path: Path) -> int:
     config = load_config(config_path)
     session = requests.Session()
@@ -328,66 +477,52 @@ def run(config_path: Path) -> int:
     rows: list[dict[str, Any]] = []
 
     minimum_score = int(config.get("minimum_score", 8))
-    page_size = int(config.get("page_size", 20))
-    max_pages = int(config.get("max_pages_per_site", 10))
     days_back = config.get("days_back")
     work_modes = config.get("work_modes", {})
 
     for site in config["sites"]:
-        site_name = site["name"]
-        public_url = site["url"]
-        api_url = workday_api_url(public_url)
+        jobs = iter_site_jobs(session, site, config)
 
-        for page in range(max_pages):
-            payload = fetch_page(session, api_url, page * page_size, page_size)
-            jobs = extract_jobs(site_name, public_url, payload)
+        for job in jobs:
+            key = job_key(job)
 
-            if not jobs:
-                break
+            if config.get("exclude_seen", True) and key in seen:
+                continue
 
-            for job in jobs:
-                key = job_key(job)
-
-                if config.get("exclude_seen", True) and key in seen:
-                    continue
-
-                if not within_days(job.posted_on, days_back):
-                    seen.add(key)
-                    continue
-
-                description = fetch_description(session, api_url, job.external_path)
-                full_job = Job(**{**job.__dict__, "description": description})
-
-                if looks_expired(full_job):
-                    seen.add(key)
-                    continue
-
-                if not is_allowed_work_mode(full_job, work_modes):
-                    seen.add(key)
-                    continue
-
-                score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
-
-                if config.get("exclude_on_negative", True) and negative_hits:
-                    seen.add(key)
-                    continue
-
-                if score >= minimum_score:
-                    rows.append(
-                        {
-                            "score": score,
-                            "site": full_job.site,
-                            "title": full_job.title,
-                            "location": full_job.location,
-                            "posted_on": full_job.posted_on,
-                            "matched_terms": ", ".join(matched_terms),
-                            "negative_terms": ", ".join(negative_hits),
-                            "url": full_job.url,
-                            "description": full_job.description[:1000],
-                        }
-                    )
-
+            if not within_days(job.posted_on, days_back):
                 seen.add(key)
+                continue
+
+            if looks_expired(job):
+                seen.add(key)
+                continue
+
+            if not is_allowed_work_mode(job, work_modes):
+                seen.add(key)
+                continue
+
+            score, matched_terms, negative_hits = score_job(job, config.get("background", {}))
+
+            if config.get("exclude_on_negative", True) and negative_hits:
+                seen.add(key)
+                continue
+
+            if score >= minimum_score:
+                rows.append(
+                    {
+                        "score": score,
+                        "site": job.site,
+                        "title": job.title,
+                        "location": job.location,
+                        "posted_on": job.posted_on,
+                        "matched_terms": ", ".join(matched_terms),
+                        "negative_terms": ", ".join(negative_hits),
+                        "url": job.url,
+                        "description": job.description[:1000],
+                    }
+                )
+
+            seen.add(key)
 
     save_seen(seen)
     paths = write_results(sorted(rows, key=lambda row: row["score"], reverse=True))
@@ -403,7 +538,7 @@ def run(config_path: Path) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Find matching jobs on Workday career sites.")
+    parser = argparse.ArgumentParser(description="Find matching jobs across configured career sites.")
     parser.add_argument("--config", default="config.yml", help="Path to config.yml")
     args = parser.parse_args()
 
