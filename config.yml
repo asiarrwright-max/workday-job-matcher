@@ -168,5 +168,18 @@ sites:
   - name: CVS Health
     url: https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers
 
+  - name: Availity
+    url: https://availity.wd1.myworkdayjobs.com/Availity_Careers_US
+
+  - name: Sharecare
+    url: https://sharecare.wd1.myworkdayjobs.com/sharecare_careers
+
+  - name: Akumin
+    url: https://akumincorp.wd5.myworkdayjobs.com/akumincareers
+
+  - name: Comprehensive Staffing / GHC
+    url: https://ghc.wd1.myworkdayjobs.com/CSI_Careers
+
+
 
 
