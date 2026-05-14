@@ -4,6 +4,12 @@ page_size: 20
 days_back: 30
 exclude_seen: false
 exclude_on_negative: true
+work_modes:
+  allow_remote: true
+  allow_hybrid: true
+  allow_onsite: false
+
+
 
 background:
   required_any:
