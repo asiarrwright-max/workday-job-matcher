@@ -1,5 +1,5 @@
 minimum_score: 0
-max_pages_per_site: 
+max_pages_per_site: 1
 page_size: 20
 days_back: 30
 exclude_seen: false
