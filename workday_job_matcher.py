@@ -321,9 +321,16 @@ def run(config_path: Path) -> int:
                 description = fetch_description(session, api_url, job.external_path)
                 full_job = Job(**{**job.__dict__, "description": description})
 
-                if looks_expired(full_job):
+                                if looks_expired(full_job):
                     seen.add(key)
                     continue
+
+                if config.get("remote_only", False) and not is_remote_role(full_job):
+                    seen.add(key)
+                    continue
+
+                score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
+
 
                 score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
 
