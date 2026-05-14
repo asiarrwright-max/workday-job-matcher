@@ -191,13 +191,29 @@ def within_days(posted_on: str, days_back: int | None) -> bool:
 
 def looks_expired(job: Job) -> bool:
     text = f"{job.title} {job.posted_on} {job.description}".lower()
-    expired_phrases = [
-        "no longer accepting applications",
-        "job posting is no longer active",
-        "this job is no longer available",
-        "this position is no longer available",
-        "applications are no longer being accepted",
+     remote_terms = [
+        "remote",
+        "work from home",
+        "wfh",
+        "nationwide",
+        "anywhere in the united states",
+        "anywhere in the us",
+        "home-based",
+        "home based",
     ]
+
+    onsite_terms = [
+        "fully onsite",
+        "on-site only",
+        "onsite only",
+        "field-",
+        "field -",
+    ]
+
+    if any(term in text for term in onsite_terms):
+        return False
+
+    return any(term in text for term in remote_terms)
 
     return any(phrase in text for phrase in expired_phrases)
 
