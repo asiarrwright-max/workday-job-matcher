@@ -1,5 +1,5 @@
 minimum_score: 18
-max_pages_per_site: 10
+max_pages_per_site: 3
 page_size: 20
 days_back: 30
 exclude_seen: false
@@ -168,17 +168,27 @@ sites:
   - name: CVS Health
     url: https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers
 
-  - name: Availity
-    url: https://availity.wd1.myworkdayjobs.com/Availity_Careers_US
+  - name: Humana
+    url: https://humana.wd5.myworkdayjobs.com/Humana_External_Career_Site
 
-  - name: Sharecare
-    url: https://sharecare.wd1.myworkdayjobs.com/sharecare_careers
+  - name: Elevance Health
+    url: https://elevancehealth.wd1.myworkdayjobs.com/ANT
 
-  - name: Akumin
-    url: https://akumincorp.wd5.myworkdayjobs.com/akumincareers
+  - name: Centene
+    url: https://centene.wd5.myworkdayjobs.com/Centene_External
 
-  - name: Comprehensive Staffing / GHC
-    url: https://ghc.wd1.myworkdayjobs.com/CSI_Careers
+  - name: SCAN Health Plan
+    url: https://scanhealthplan.wd108.myworkdayjobs.com/scancareers
+
+  - name: Point32Health
+    url: https://point32health.wd5.myworkdayjobs.com/THP
+
+  - name: CareSource
+    url: https://caresource.wd1.myworkdayjobs.com/caresource
+
+  - name: ChenMed
+    url: https://chenmed.wd1.myworkdayjobs.com/ChenMed
+
 
 
 
