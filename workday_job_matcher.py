@@ -185,37 +185,53 @@ def talentbrew_page_url(base_url: str, page: int) -> str:
 def extract_talentbrew_jobs(site_name: str, base_url: str, html_text: str) -> list[Job]:
     jobs: list[Job] = []
 
-    pattern = re.compile(
-        r'<a\s+href="(?P<href>/job/[^"]+)"[^>]*>(?P<label>.*?)</a>',
-        flags=re.IGNORECASE | re.DOTALL,
+    href_pattern = re.compile(
+        r'href=["\'](?P<href>/job/[^"\']+)["\']',
+        flags=re.IGNORECASE,
     )
 
-    for match in pattern.finditer(html_text):
+    for match in href_pattern.finditer(html_text):
         href = html.unescape(match.group("href"))
-        label = normalize_text(match.group("label"))
+        url = urljoin(base_url, href)
 
-        if not label or "|" not in label:
-            continue
+        window_start = max(0, match.start() - 500)
+        window_end = min(len(html_text), match.end() + 500)
+        window = html_text[window_start:window_end]
+        label = normalize_text(window)
 
-        parts = [part.strip() for part in label.split("|")]
-        if len(parts) < 2:
-            continue
-
-        title_and_req = parts[0]
-        location = parts[1]
-        work_setting = parts[2] if len(parts) > 2 else ""
-
-        req_match = re.search(r"\b(\d{6,})\b", title_and_req)
+        req_match = re.search(r"\b(\d{6,})\b", label)
         external_id = req_match.group(1) if req_match else href
-        title = re.sub(r"\b\d{6,}\b", "", title_and_req).strip(" -")
+
+        title = ""
+        title_patterns = [
+            r">\s*([^<>|]{5,120}?)\s+\d{6,}\s*\|",
+            r"<h2[^>]*>(.*?)</h2>",
+            r"<h3[^>]*>(.*?)</h3>",
+        ]
+
+        for title_pattern in title_patterns:
+            title_match = re.search(title_pattern, window, flags=re.IGNORECASE | re.DOTALL)
+            if title_match:
+                title = normalize_text(title_match.group(1))
+                break
+
+        if not title:
+            title = normalize_text(label[:120])
+
+        location = ""
+        pipe_parts = [part.strip() for part in label.split("|")]
+        if len(pipe_parts) >= 2:
+            location = pipe_parts[1]
+            if len(pipe_parts) >= 3:
+                location = f"{location} {pipe_parts[2]}"
 
         jobs.append(
             Job(
                 site=site_name,
                 title=title,
-                location=normalize_text(f"{location} {work_setting}"),
+                location=normalize_text(location),
                 posted_on="",
-                url=urljoin(base_url, href),
+                url=url,
                 external_path=href,
                 description="",
                 external_id=external_id,
@@ -223,6 +239,7 @@ def extract_talentbrew_jobs(site_name: str, base_url: str, html_text: str) -> li
         )
 
     return dedupe_jobs(jobs)
+
 
 
 def fetch_talentbrew_description(session: requests.Session, url: str) -> tuple[str, str]:
