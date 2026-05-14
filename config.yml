@@ -114,14 +114,7 @@ background:
     North Dakota: 3
     Fargo: 4
     Moorhead: 4
-    Texas: 3
-    Arizona: 3
-    Florida: 2
-    Tennessee: 2
-    North Carolina: 2
-    Georgia: 2
-    Colorado: 2
-    Illinois: 2
+
 
   negative:
     bedside nursing: 12
