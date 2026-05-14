@@ -1,5 +1,5 @@
-minimum_score: 18
-max_pages_per_site: 2
+minimum_score: 0
+max_pages_per_site: 
 page_size: 20
 days_back: 30
 exclude_seen: false
@@ -7,7 +7,7 @@ exclude_on_negative: true
 work_modes:
   allow_remote: true
   allow_hybrid: true
-  allow_onsite: false
+  allow_onsite: true
 
 
 
@@ -158,33 +158,10 @@ claims processing: 8
 
 
 sites:
-  - name: CVS Health
-    url: https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers
-
-  - name: Humana
-    url: https://humana.wd5.myworkdayjobs.com/Humana_External_Career_Site
-
-  - name: Elevance Health
-    url: https://elevancehealth.wd1.myworkdayjobs.com/ANT
-
-  - name: Centene
-    url: https://centene.wd5.myworkdayjobs.com/Centene_External
-
-  - name: SCAN Health Plan
-    url: https://scanhealthplan.wd108.myworkdayjobs.com/scancareers
-
-  - name: Point32Health
-    url: https://point32health.wd5.myworkdayjobs.com/THP
-
-  - name: CareSource
-    url: https://caresource.wd1.myworkdayjobs.com/caresource
-
-  - name: ChenMed
-    url: https://chenmed.wd1.myworkdayjobs.com/ChenMed
-    
   - name: UnitedHealth Group
     type: talentbrew
     url: https://careers.unitedhealthgroup.com/search-jobs
+
 
 
 
