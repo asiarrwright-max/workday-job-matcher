@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import mimetypes
 import os
 import smtplib
 import ssl
@@ -19,32 +20,53 @@ def load_matches(csv_path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def build_body(matches: list[dict[str, str]]) -> str:
+def build_body(matches: list[dict[str, str]], csv_path: Path) -> str:
+    preview_count = min(5, len(matches))
     lines = [
         f"Found {len(matches)} matching job posting(s).",
         "",
+        f"Top {preview_count} preview:",
+        "",
     ]
 
-    for match in matches[:20]:
+    for index, match in enumerate(matches[:preview_count], start=1):
         lines.extend(
             [
-                f"{match.get('title', 'Untitled')} - {match.get('site', '')}",
-                f"Score: {match.get('score', '')}",
-                f"Location: {match.get('location', '')}",
-                f"Posted: {match.get('posted_on', '')}",
-                f"Matched: {match.get('matched_terms', '')}",
-                f"URL: {match.get('url', '')}",
+                f"{index}. {match.get('title', 'Untitled')} - {match.get('site', '')}",
+                f"   Score: {match.get('score', '')}",
+                f"   Location: {match.get('location', '')}",
+                f"   Posted: {match.get('posted_on', '')}",
+                f"   URL: {match.get('url', '')}",
                 "",
             ]
         )
 
-    if len(matches) > 20:
-        lines.append(f"And {len(matches) - 20} more in the GitHub artifact.")
+    lines.extend(
+        [
+            "The full CSV is attached.",
+            f"Attachment: {csv_path.name}",
+        ]
+    )
 
     return "\n".join(lines)
 
 
-def send_email(subject: str, body: str) -> None:
+def attach_file(message: EmailMessage, file_path: Path) -> None:
+    content_type, _ = mimetypes.guess_type(file_path.name)
+    if content_type:
+        maintype, subtype = content_type.split("/", 1)
+    else:
+        maintype, subtype = "application", "octet-stream"
+
+    message.add_attachment(
+        file_path.read_bytes(),
+        maintype=maintype,
+        subtype=subtype,
+        filename=file_path.name,
+    )
+
+
+def send_email(subject: str, body: str, attachment_path: Path) -> None:
     host = os.environ["SMTP_HOST"]
     port = int(os.environ.get("SMTP_PORT", "587"))
     user = os.environ["SMTP_USER"]
@@ -56,6 +78,8 @@ def send_email(subject: str, body: str) -> None:
     message["To"] = to_email
     message["Subject"] = subject
     message.set_content(body)
+
+    attach_file(message, attachment_path)
 
     context = ssl.create_default_context()
 
@@ -80,13 +104,15 @@ def main() -> int:
         print("Match CSV is empty; skipping email.")
         return 0
 
-    send_email(
-        subject=f"Workday job matcher: {len(matches)} new match(es)",
-        body=build_body(matches),
-    )
-    print(f"Sent email for {len(matches)} match(es).")
+    top_title = matches[0].get("title", "new match")
+    subject = f"Workday matcher: {len(matches)} match(es), top: {top_title}"
+    body = build_body(matches, csv_path)
+
+    send_email(subject=subject, body=body, attachment_path=csv_path)
+    print(f"Sent email for {len(matches)} match(es) with CSV attachment.")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
