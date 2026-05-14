@@ -191,7 +191,24 @@ def within_days(posted_on: str, days_back: int | None) -> bool:
 
 def looks_expired(job: Job) -> bool:
     text = f"{job.title} {job.posted_on} {job.description}".lower()
-     remote_terms = [
+    expired_phrases = [
+        "no longer accepting applications",
+        "job posting is no longer active",
+        "this job is no longer available",
+        "this position is no longer available",
+        "applications are no longer being accepted",
+    ]
+
+    return any(phrase in text for phrase in expired_phrases)
+
+
+def is_allowed_work_mode(job: Job, work_modes: dict[str, bool]) -> bool:
+    if not work_modes:
+        return True
+
+    text = f"{job.title} {job.location} {job.description}".lower()
+
+    remote_terms = [
         "remote",
         "work from home",
         "wfh",
@@ -202,20 +219,39 @@ def looks_expired(job: Job) -> bool:
         "home based",
     ]
 
+    hybrid_terms = [
+        "hybrid",
+        "flexible work",
+        "in-office days",
+        "in office days",
+    ]
+
     onsite_terms = [
         "fully onsite",
         "on-site only",
         "onsite only",
         "field-",
         "field -",
+        "office-based",
+        "office based",
+        "on site",
+        "onsite",
     ]
 
-    if any(term in text for term in onsite_terms):
+    is_remote = any(term in text for term in remote_terms)
+    is_hybrid = any(term in text for term in hybrid_terms)
+    is_onsite = any(term in text for term in onsite_terms)
+
+    if is_remote and work_modes.get("allow_remote", True):
+        return True
+
+    if is_hybrid and work_modes.get("allow_hybrid", True):
+        return True
+
+    if is_onsite and not work_modes.get("allow_onsite", False):
         return False
 
-    return any(term in text for term in remote_terms)
-
-    return any(phrase in text for phrase in expired_phrases)
+    return work_modes.get("allow_onsite", False)
 
 
 def term_hits(text: str, terms: list[str]) -> list[str]:
@@ -295,6 +331,7 @@ def run(config_path: Path) -> int:
     page_size = int(config.get("page_size", 20))
     max_pages = int(config.get("max_pages_per_site", 10))
     days_back = config.get("days_back")
+    work_modes = config.get("work_modes", {})
 
     for site in config["sites"]:
         site_name = site["name"]
@@ -321,16 +358,13 @@ def run(config_path: Path) -> int:
                 description = fetch_description(session, api_url, job.external_path)
                 full_job = Job(**{**job.__dict__, "description": description})
 
-                                if looks_expired(full_job):
+                if looks_expired(full_job):
                     seen.add(key)
                     continue
 
-                if config.get("remote_only", False) and not is_remote_role(full_job):
+                if not is_allowed_work_mode(full_job, work_modes):
                     seen.add(key)
                     continue
-
-                score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
-
 
                 score, matched_terms, negative_hits = score_job(full_job, config.get("background", {}))
 
@@ -387,3 +421,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
