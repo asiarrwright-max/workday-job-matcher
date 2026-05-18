@@ -1,4 +1,4 @@
-minimum_score: 28
+minimum_score: 30
 max_pages_per_site: 3
 page_size: 20
 days_back: 14
@@ -129,8 +129,8 @@ background:
     workflow redesign: 6
     operational strategy: 6
     process improvement: 6
-    KPI: 6
-    dashboard: 5
+    KPI: 2
+    dashboard: 2
     healthcare analytics: 5
     provider performance improvement: 7
     healthcare operations scaling: 6
@@ -150,13 +150,14 @@ background:
     healthcare project management: 6
     Lean: 5
     workflow optimization: 6
-    remote: 3
-    nationwide remote: 4
+    remote: 2
+    nationwide remote: 3
     hybrid: 1
     Minnesota: 1
     North Dakota: 1
     Fargo: 1
     Moorhead: 1
+   
 
 
   negative:
@@ -190,14 +191,18 @@ background:
     coordinator: 7
     assistant: 7
     technical architect: 12
-architect: 8
-revenue cycle biller: 12
-biller: 12
-telepharmacy: 12
-pharmacy technician: 12
-technician: 10
-store: 8
-claims processing: 8
+    architect: 8
+    revenue cycle biller: 12
+    biller: 12
+    telepharmacy: 12
+    pharmacy technician: 12
+    technician: 10
+    store: 8
+    claims processing: 8
+    sales representative: 10
+    account executive: 8
+    warehouse: 10
+    retail: 10
 
 
 sites:
