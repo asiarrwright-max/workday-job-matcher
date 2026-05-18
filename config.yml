@@ -230,6 +230,18 @@ sites:
   - name: ChenMed
     url: https://chenmed.wd1.myworkdayjobs.com/ChenMed
 
+  - name: Molina Healthcare
+    url: https://careers.molinahealthcare.com/search-jobs
+
+  - name: UnitedHealth Group
+    url: https://careers.unitedhealthgroup.com/job-search-results/
+
+  - name: Blue Cross Blue Shield Association
+    url: https://www.bcbs.com/about-us/jobs-careers
+
+  - name: Blue Cross Blue Shield of Massachusetts
+    url: https://careers.bluecrossma.org/us/en/
+
 
 
 
