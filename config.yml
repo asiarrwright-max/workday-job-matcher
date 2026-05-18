@@ -204,7 +204,6 @@ background:
     warehouse: 10
     retail: 10
 
-
 sites:
   - name: CVS Health
     url: https://cvshealth.wd1.myworkdayjobs.com/CVS_Health_Careers
@@ -231,18 +230,12 @@ sites:
     url: https://chenmed.wd1.myworkdayjobs.com/ChenMed
 
   - name: Molina Healthcare
+    type: talentbrew
     url: https://careers.molinahealthcare.com/search-jobs
 
   - name: UnitedHealth Group
-    url: https://careers.unitedhealthgroup.com/job-search-results/
-
-  - name: Blue Cross Blue Shield Association
-    url: https://www.bcbs.com/about-us/jobs-careers
-
-  - name: Blue Cross Blue Shield of Massachusetts
-    url: https://careers.bluecrossma.org/us/en/
-
-
+    type: talentbrew
+    url: https://careers.unitedhealthgroup.com/search-jobs?re=US
 
 
 
