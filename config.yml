@@ -1,4 +1,4 @@
-minimum_score: 20
+minimum_score: 28
 max_pages_per_site: 3
 page_size: 20
 days_back: 14
@@ -9,9 +9,6 @@ work_modes:
   allow_remote: true
   allow_hybrid: true
   allow_onsite: false
-
-
-
 
 background:
   required_any:
@@ -31,6 +28,16 @@ background:
     - program management
     - operational excellence
     - healthcare transformation
+    - population health strategy
+    - cost and utilization
+    - cost of care
+    - medical spend
+    - Medicaid Expansion
+    - Medicare Advantage
+    - health plan
+    - payer-provider collaboration
+    - population health analytics
+    - performance improvement
 
   nice_to_have:
     director of operations: 12
@@ -66,7 +73,42 @@ background:
     care delivery operations: 7
     Medicare operations: 7
     Medicaid operations: 7
-
+    director population health operations: 14
+    population health strategy: 10
+    population health operations: 10
+    value-based care operations: 10
+    Medicaid Expansion: 9
+    Medicare Advantage: 9
+    cost and utilization management: 10
+    cost of care outcomes: 9
+    total cost of care: 9
+    medical spend: 8
+    utilization management strategies: 8
+    ED utilization: 7
+    SNF utilization: 7
+    care management models: 9
+    care management workflows: 8
+    member engagement: 8
+    high-risk populations: 8
+    behavioral health: 6
+    SUD: 6
+    HEDIS interventions: 9
+    care gaps: 8
+    HEDIS/Stars: 9
+    population health analytics: 9
+    claims data: 8
+    utilization data: 8
+    risk data: 8
+    risk-stratified outreach: 9
+    outreach strategy: 8
+    provider performance: 8
+    health plan partnership: 8
+    payer/provider collaboration: 8
+    performance reporting: 7
+    operational performance: 7
+    multidisciplinary teams: 7
+    community health programs: 6
+    regulatory performance: 6
     population health operations: 8
     value-based care: 8
     Medicare Advantage: 8
@@ -108,14 +150,13 @@ background:
     healthcare project management: 6
     Lean: 5
     workflow optimization: 6
-
-    remote: 5
-    nationwide remote: 6
-    hybrid: 2
-    Minnesota: 3
-    North Dakota: 3
-    Fargo: 4
-    Moorhead: 4
+    remote: 3
+    nationwide remote: 4
+    hybrid: 1
+    Minnesota: 1
+    North Dakota: 1
+    Fargo: 1
+    Moorhead: 1
 
 
   negative:
