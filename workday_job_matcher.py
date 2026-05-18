@@ -363,11 +363,13 @@ def is_allowed_work_mode(job: Job, work_modes: dict[str, bool]) -> bool:
 
     if is_hybrid and work_modes.get("allow_hybrid", True):
         return True
-
+        
     if is_onsite and not work_modes.get("allow_onsite", False):
         return False
 
-    return work_modes.get("allow_onsite", False)
+    # If the job does not clearly say remote, hybrid, or onsite, keep it.
+    return True
+
 
 
 def term_hits(text: str, terms: list[str]) -> list[str]:
