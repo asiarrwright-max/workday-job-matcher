@@ -237,6 +237,27 @@ sites:
     type: talentbrew
     url: https://careers.unitedhealthgroup.com/search-jobs?re=US
 
+  - name: Highmark Health
+    url: https://highmarkhealth.wd1.myworkdayjobs.com/highmark
+
+  - name: Blue Cross Blue Shield of Arizona
+    url: https://bcbsaz.wd1.myworkdayjobs.com/BCBSAZCareers
+
+  - name: Presbyterian Healthcare Services
+    url: https://phsorg.wd1.myworkdayjobs.com/Careers
+
+  - name: Sharecare
+    url: https://sharecare.wd1.myworkdayjobs.com/Sharecare_Careers
+
+  - name: Accenture Health
+    url: https://accenture.wd103.myworkdayjobs.com/AccentureCareers
+
+  - name: Methodist Health System
+    url: https://methodisthealthsystem.wd1.myworkdayjobs.com/MHS_Careers
+
+  - name: Denver Health
+    url: https://denverhealth.wd1.myworkdayjobs.com/DHHA-Main
+
 
 
 
